@@ -1,0 +1,17 @@
+
+<h1>{{ currentState | uppercase }}</h1>
+
+<form ng-submit='submit()'>
+  <input type="text" ng-model='user.username' placeholder="Username" required>
+  <input type="email" ng-model='user.email'  placeholder="Email" ng-if='currentState === "register"' required>
+  <input type="text" ng-model='user.Profile.name' ng-if='currentState === "register"' placeholder="Name" required>
+  <input type="password" ng-model='user.password' placeholder="Password" required>
+  <input  type="password"
+          ng-model='user.password2'
+          placeholder="Password (again)"
+          ng-if='currentState === "register"'
+          required>
+
+  <button class="btn btn-success">{{ currentState }}</button>
+
+</form>
