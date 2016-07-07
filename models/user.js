@@ -9,13 +9,14 @@ let bcrypt = require('bcryptjs');
 const FACEBOOK_SECRET = process.env.FACEBOOK_SECRET;
 const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
 const request = require('request');
+console.log(FACEBOOK_SECRET);
 
 
-// let sentMessageSchema = new mongoose.Schema({
-//   createdAt: { type: Date, default: Date.now },
-//   to: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-//   content: { type: String }
-// });
+let wallSchema = new mongoose.Schema({
+  createdAt: { type: Date, default: Date.now },
+  from: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  content: { type: String }
+});
 
 // let receivedMessageSchema = new mongoose.Schema({
 //   createdAt: { type: Date, default: Date.now },
@@ -31,10 +32,10 @@ let userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   image: { type: String },
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  wall: [wallSchema],
 
   facebook: { type: String },
   profileImage: { type: String },
-  displayName: { type: String },
   google: { type: String }
 
 });
@@ -68,6 +69,7 @@ userSchema.statics.authMiddleware = function(req, res, next) {
 };
 
 userSchema.statics.facebook = function(body, cb) {
+  console.log(body);
   var fields = ['id', 'email', 'first_name', 'last_name', 'link', 'name', 'location', 'birthday', 'gender', 'picture'];
   var accessTokenUrl = 'https://graph.facebook.com/v2.5/oauth/access_token';
   var graphApiUrl = 'https://graph.facebook.com/v2.5/me?fields=' + fields.join(',');
@@ -94,7 +96,7 @@ userSchema.statics.facebook = function(body, cb) {
       // res.send();
 
 
-      this.findOne({ facebook: profile.id }, (err, user) => {
+      User.findOne({ facebook: profile.id }, (err, user) => {
         if (err) return res.status(400).send(err);
 
         if (user) {
@@ -102,12 +104,12 @@ userSchema.statics.facebook = function(body, cb) {
           let token = user.generateToken();
           //generate the token 
           //send the token
-          res.send({ token: token });
+          cb(null, token);
         } else {
           //new user
           let newUser = new User({
             email: profile.email,
-            displayName: profile.name,
+            name: profile.name,
             profileImage: profile.picture.data.url,
             facebook: profile.id
           });
@@ -199,7 +201,9 @@ userSchema.statics.facebook = function(body, cb) {
 userSchema.methods.generateToken = function() {
 
   let payload = {
-    _id: this._id
+    _id: this._id,
+    name: this.name
+
   };
 
   let token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1 day' });

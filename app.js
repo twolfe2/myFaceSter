@@ -1,4 +1,5 @@
 'use strict';
+require('dotenv').config();
 
 const PORT = process.env.PORT || 8000;
 
@@ -16,7 +17,7 @@ let app = express();
 //Database setup
 let mongoose = require('mongoose');
 
-let mongoUrl = process.env.MONGODB_URI || 'mongodb://localhost/social';
+let mongoUrl = process.env.MONGODB_URI || 'mongodb://localhost/socialApp';
 
 mongoose.connect(mongoUrl, err => {
   console.log(err ||  `MongoDB connected at ${mongoUrl}`);

@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title><%= title %></title>
-
-  <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/css/style.css">
-
-  <script src="/bower_components/angular/angular.js"></script>
-  <script src="/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
-  <script src="/bower_components/angular-cookies/angular-cookies.js"></script>
-  <script src="/bower_components/satellizer/satellizer.min.js"></script>
-
-
-  <script src="/js/module.js"></script>
-  <script src="/js/controllers.js"></script>
-  <script src="/js/services.js"></script>
-
+    <meta charset="UTF-8">
+    <title>
+        <%= title %>
+    </title>
+    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/bower_components/angular/angular.js"></script>
+    <script src="/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script src="/bower_components/angular-cookies/angular-cookies.js"></script>
+    <script src="/bower_components/satellizer/satellizer.min.js"></script>
+    <script src="/js/module.js"></script>
+    <script src="/js/controllers.js"></script>
+    <script src="/js/services.js"></script>
 </head>
+
 <body ng-app='myApp' ng-controller='mainCtrl'>
-  <div class="container">
-    <h1><%= title %></h1>
-
-    <button class="btn" ui-sref='home'>Home</button>
-    <button ng-show='currentUser' class="btn" ui-sref='profile'>Profile</button>    
-    
-    <button ng-hide='currentUser' class="btn" ui-sref='login'>Login</button>
-    <button ng-hide='currentUser' class="btn" ui-sref='register'>Register</button>    
-    <button ng-show='currentUser' class="btn" ng-click='logout()'>Logout</button>
-    <button ng-show='currentUser' class="btn" ui-sref='users'>Users</button>
-
-    <span ng-show='currentUser'>Hello, {{currentUser.username}}!</span>
-
-    <div ui-view></div>
-    
-  </div>
+    <div class="container">
+        <h1><%= title %></h1>
+        <h2> isAuthenticated: {{ isAuthenticated() }} </h2>
+        <button class="btn" ui-sref='home'>Home</button>
+        <span ng-if='!isAuthenticated()'>
+      <button class="btn" ui-sref='login'>Login</button>
+      <button class="btn" ui-sref='register'>Register</button>
+    </span>
+        <span ng-if='isAuthenticated()'>
+      <button class="btn" ng-click='logout()'>Logout</button>
+        <button class="btn" ui-sref='profile'>Profile</button>
+        <button class="btn" ui-sref='users'>Users</button>
+    </span>
+        <span ng-show='currentUser'>Hello, {{currentUser.name}}!</span>
+        <div ui-view></div>
+    </div>
 </body>
+
 </html>

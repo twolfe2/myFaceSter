@@ -6,10 +6,16 @@ app.service('User', function($http, $rootScope, $cookies, $state, $q, TOKENNAME)
 
 
   this.getUsers = () => {
-    return $http.get('/api/users');
+    return $http.get('/api/users')
+      .catch(err => {
+        if(err) console.log(err);
+      });
   }
   this.getProfile = () => {
-    return $http.get('/api/users/profile');
+    return $http.get('/api/users/profile')
+      .catch(err => {
+        if(err) console.log(err);
+      })
   };
 
   this.readToken = () => {

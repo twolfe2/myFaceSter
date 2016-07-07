@@ -2,8 +2,6 @@
 
 
 var app = angular.module('myApp', ['ui.router', 'ngCookies', 'satellizer']);
-$authProvider.loginUrl = '/api/users/login';
-$authProvider.signupUrl = '/api/users/signup';
 
 app.constant('TOKENNAME', 'authtoken');
 
@@ -20,7 +18,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
       controller: 'loginRegisterCtrl'
     })
     .state('register', {
-      url: '/login',
+      url: '/register',
       templateUrl: '/html/loginregister.html',
       controller: 'loginRegisterCtrl'
     })
@@ -49,6 +47,9 @@ app.config(function($stateProvider, $urlRouterProvider) {
 })
 
 app.config(function($authProvider) {
+  $authProvider.loginUrl = '/api/users/login';
+$authProvider.signupUrl = '/api/users/signup';
+
   $authProvider.facebook({
     clientId: '277768235911300',
     url: '/api/users/facebook'

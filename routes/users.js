@@ -15,12 +15,16 @@ let User = require('../models/user');
 
 
 router.get('/profile', User.authMiddleware, (req, res) => {
+  console.log(req.user);
   res.send(req.user);
 });
 
 router.post('/facebook', (req,res) => {
   User.facebook(req.body, (err, token) => {
-    if(err) return res.status(400).send(err);
+    if(err) {
+      console.log(err);
+      return res.status(400).send(err);
+    }
     res.send({token: token});
   });
 });
@@ -57,10 +61,10 @@ router.post('/:fromId/sendMessage/:toId', (req, res) => {
 
 
 router.route('/')
-  .get((req, res) => {
-    User.find({}, (err, user) => {
+  .get(User.authMiddleware,(req, res) => {
+    User.find({}, (err, users) => {
       if (err) return res.status(400).send(err);
-      res.send(user);
+      res.send(users);
 
     }).select('-password');
   })

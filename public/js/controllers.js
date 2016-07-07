@@ -2,14 +2,20 @@
 
 var app = angular.module('myApp');
 
-app.controller('mainCtrl', function($scope, $rootScope, User) {
+app.controller('mainCtrl', function($scope, $rootScope, User, $auth, $state) {
   console.log('mainCtrl!');
   // debugger;
   // console.log($rootScope);
-  $scope.isAuthenticated = () => $auth.isAuthenticated();
-
+  $scope.isAuthenticated = () => {
+    // $rootScope.currentUser = $auth.getPayload();
+    return $auth.isAuthenticated();
+  };
+  if($scope.isAuthenticated) {
+    $rootScope.currentUser = $auth.getPayload();
+  }
   $scope.logout = () => {
     $auth.logout();
+    $rootScope.currentUser = null;
     $state.go('home');
   };
 });
@@ -18,15 +24,22 @@ app.controller('usersCtrl', function(Users, $scope) {
   $scope.users = Users.data;
 })
 
-app.controller('profileCtrl', function(CurrentUser, $scope) {
+app.controller('profileCtrl', function(CurrentUser, $scope, $rootScope) {
   console.log('profileCtrl!');
   console.log('CurrentUser:', CurrentUser);
-  $scope.currentUser = CurrentUser.data;
+  $rootScope.currentUser = CurrentUser.data;
 })
 
-app.controller('loginRegisterCtrl', function($scope, $state, User) {
+app.controller('loginRegisterCtrl', function($scope, $state, User, $auth) {
 
   $scope.currentState = $state.current.name;
+  $scope.authenticate = function(provider) {
+    $auth.authenticate(provider)
+      .then(() => {
+        $state.go('profile');
+
+      })
+  };
 
   $scope.submit = () => {
     console.log('$scope.user:', $scope.user);
