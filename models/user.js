@@ -6,6 +6,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const mongoose = require('mongoose');
 let jwt = require('jsonwebtoken');
 let bcrypt = require('bcryptjs');
+const FACEBOOK_SECRET = process.env.FACEBOOK_SECRET;
+const GOOGLE_SECRET = process.env.GOOGLE_SECRET;
+const request = require('request');
+
 
 // let sentMessageSchema = new mongoose.Schema({
 //   createdAt: { type: Date, default: Date.now },
@@ -20,108 +24,239 @@ let bcrypt = require('bcryptjs');
 // });
 
 let userSchema = new mongoose.Schema({
-  email: { type: String, required: true },
-  password: { type: String, required: true },
-  username: { type: String, required: true },
-  Profile: {
-    name: { type: String, required: true },
-    image: { type: String },
-    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
-  }
+  email: { type: String, unique: true, lowercase: true },
+  password: { type: String },
+  // username: { type: String, required: true },
+
+  name: { type: String, required: true },
+  image: { type: String },
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
+  facebook: { type: String },
+  profileImage: { type: String },
+  displayName: { type: String },
+  google: { type: String }
+
 });
 
-
-//add the message to each users appropriate array
-// userSchema.statics.addMessage = function(fromId, message, toId, cb) {
-//   User.findById(fromId, (err, user) => {
-//     if (err || !user) return res.status(401).send(err || { error: 'User not found.' });
-//     let message = {
-//       to: toId,
-//       content: message
-//     };
-//     user.Profile.sentMessages.push(message);
-
-//     user.save((err, savedUser) => {
-//       if (err) return cb(err);
-
-//       User.findById(toId, (err, user) => {
-//         if (err || !user) return res.status(401).send(err || { error: 'User not found.' });
-//         let toMessage = {
-//           from: fromId,
-//           content: message
-//         };
-
-//         user.Profile.receivedMessages.push(message);
-
-//         user.save((err, savedUser) => {
-//           if (err) return cb(err);
-//           cb('Message added', err);
-//         });
-//       });
-//     });
-//   });
-// };
-
 userSchema.statics.authMiddleware = function(req, res, next) {
+  // look at the cookie, and get the token
+  // verify the token
 
-  let token = req.cookies.authtoken;
+  // if token is bad or absent, respond with error (not authorized)
+  // if token is good, call next
+
+  let tokenHeader = req.headers.authorization;
+
+  if (!tokenHeader) {
+    return res.status(401).send({ error: 'Missing authorization header.' });
+  }
+
+  let token = tokenHeader.split(' ')[1];
 
   jwt.verify(token, JWT_SECRET, (err, payload) => {
     if (err) return res.status(401).send(err);
-    console.log(payload);
+
     User.findById(payload._id, (err, user) => {
       if (err || !user) return res.status(401).send(err || { error: 'User not found.' });
 
       req.user = user;
+
       next();
-    }).select('-password');
+    });
   });
 };
 
-userSchema.methods.generateToken = function() {
-  let payload = {
-    _id: this._id,
-    Profile: this.Profile
+userSchema.statics.facebook = function(body, cb) {
+  var fields = ['id', 'email', 'first_name', 'last_name', 'link', 'name', 'location', 'birthday', 'gender', 'picture'];
+  var accessTokenUrl = 'https://graph.facebook.com/v2.5/oauth/access_token';
+  var graphApiUrl = 'https://graph.facebook.com/v2.5/me?fields=' + fields.join(',');
+  var params = {
+    code: body.code,
+    client_id: body.clientId,
+    client_secret: FACEBOOK_SECRET,
+    redirect_uri: body.redirectUri
   };
 
-  let token = jwt.sign(payload, JWT_SECRET);
-  return token;
-}
+  // Step 1. Exchange authorization code for access token.
+  request.get({ url: accessTokenUrl, qs: params, json: true }, function(err, response, accessToken) {
+    if (response.statusCode !== 200) {
+      return cb({ message: accessToken.error.message });
+    }
+
+    // Step 2. Retrieve profile information about the current user.
+    request.get({ url: graphApiUrl, qs: accessToken, json: true }, function(err, response, profile) {
+      if (response.statusCode !== 200) {
+        return cb({ message: profile.error.message });
+      }
+
+      // console.log('profile:',profile);
+      // res.send();
 
 
-userSchema.statics.register = function(userObj, cb) {
-  this.findOne({ username: userObj.username }, (err, user) => {
-    if (err || user) return cb(err || { error: 'Username already taken.' });
+      this.findOne({ facebook: profile.id }, (err, user) => {
+        if (err) return res.status(400).send(err);
 
-    bcrypt.hash(userObj.password, 12, (err, hash) => {
-      if (err) return cb(err);
+        if (user) {
+          //returning user
+          let token = user.generateToken();
+          //generate the token 
+          //send the token
+          res.send({ token: token });
+        } else {
+          //new user
+          let newUser = new User({
+            email: profile.email,
+            displayName: profile.name,
+            profileImage: profile.picture.data.url,
+            facebook: profile.id
+          });
 
-      userObj.password = hash;
+          newUser.save((err, savedUser) => {
+              if (err) return cb(err);
 
-      this.create(userObj, err => {
-        cb(err);
+              let token = savedUser.generateToken();
+              cb(null, token);
+            })
+            //create new user
+            //save to db
+            //respond with token
+        }
       });
     });
   });
+
+}
+
+// userSchema.statics.google = function(body, cb) {
+// var accessTokenUrl = 'https://accounts.google.com/o/oauth2/token';
+// var peopleApiUrl = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect';
+// var params = {
+//   code: body.code,
+//   client_id: body.clientId,
+//   client_secret: GOOGLE_SECRET,
+//   redirect_uri: body.redirectUri,
+//   grant_type: 'authorization_code'
+// };
+
+// // Step 1. Exchange authorization code for access token.
+// request.post(accessTokenUrl, { json: true, form: params }, function(err, response, token) {
+//   var accessToken = token.access_token;
+//   var headers = { Authorization: 'Bearer ' + accessToken };
+
+//   // Step 2. Retrieve profile information about the current user.
+//   request.get({ url: peopleApiUrl, headers: headers, json: true }, function(err, response, profile) {
+//     if (profile.error) {
+//       return res.status(500).send({ message: profile.error.message });
+//     }
+//     // Step 3a. Link user accounts.
+//     if (req.header('Authorization')) {
+//       User.findOne({ google: profile.sub }, function(err, existingUser) {
+//         if (existingUser) {
+//           return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
+//         }
+//         var token = req.header('Authorization').split(' ')[1];
+//         var payload = jwt.decode(token, config.TOKEN_SECRET);
+//         User.findById(payload.sub, function(err, user) {
+//           if (!user) {
+//             return res.status(400).send({ message: 'User not found' });
+//           }
+//           user.google = profile.sub;
+//           user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
+//           user.displayName = user.displayName || profile.name;
+//           user.save(function() {
+//             var token = createJWT(user);
+//             res.send({ token: token });
+//           });
+//         });
+//       });
+//     } else {
+//       // Step 3b. Create a new user account or return an existing one.
+//       User.findOne({ google: profile.sub }, function(err, existingUser) {
+//         if (existingUser) {
+//           return res.send({ token: createJWT(existingUser) });
+//         }
+//         var user = new User();
+//         user.google = profile.sub;
+//         user.picture = profile.picture.replace('sz=50', 'sz=200');
+//         user.displayName = profile.name;
+//         user.save(function(err) {
+//           var token = createJWT(user);
+//           res.send({ token: token });
+//         });
+//       });
+//     }
+//   });
+// });
+// });
+
+
+
+// };
+
+
+
+userSchema.methods.generateToken = function() {
+
+  let payload = {
+    _id: this._id
+  };
+
+  let token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1 day' });
+
+  return token;
+
 };
+
+userSchema.statics.register = function(userObj, cb) {
+
+  // Check that the username is not taken
+  // Create a new user document
+
+  this.findOne({ email: userObj.email }, (err, user) => {
+    if (err || user) return cb(err || { error: 'A user with this email already exists.' });
+
+    this.create(userObj, (err, savedUser) => {
+      if (err) cb(err);
+
+      let token = savedUser.generateToken();
+      cb(null, token);
+    });
+  });
+};
+
+userSchema.pre('save', function(next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  bcrypt.hash(this.password, 12, (err, hash) => {
+    this.password = hash;
+    next();
+  });
+});
 
 userSchema.statics.authenticate = function(userObj, cb) {
 
-  this.findOne({ username: userObj.username }, (err, user) => {
-    if (err) return cb(err);
+  // try to find user document by username
+  // check if username and password match
+  // set login state
 
-    if (!user) {
-      return cb({ error: 'Invalid username or password.' });
-    }
+  this.findOne({ email: userObj.email })
+    .exec((err, user) => {
+      if (err) return cb(err);
 
-    bcrypt.compare(userObj.password, user.password, (err, result) => {
-      if (err || !result) return cb(err || { error: 'Invalid username or password' });
+      if (!user) {
+        return cb({ error: 'Invalid email or password.' });
+      }
+      //           ( password attempt,   db hash )
+      bcrypt.compare(userObj.password, user.password, (err, isGood) => {
+        if (err || !isGood) return cb(err || { error: 'Invalid email or password.' });
 
-      user.password = null;
+        let token = user.generateToken();
 
-      cb(null, user);
+        cb(null, token);
+      });
     });
-  });
 };
 
 

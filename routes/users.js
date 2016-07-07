@@ -2,6 +2,7 @@
 
 
 const express = require('express');
+const request = require('request');
 
 
 
@@ -15,28 +16,30 @@ let User = require('../models/user');
 
 router.get('/profile', User.authMiddleware, (req, res) => {
   res.send(req.user);
-})
+});
 
-//register a new user
-router.post('/register', (req, res) => {
-  console.log(req.body);
-  User.register(req.body, err => {
-    if (err) return res.status(400).send(err);
-
-    res.send();
+router.post('/facebook', (req,res) => {
+  User.facebook(req.body, (err, token) => {
+    if(err) return res.status(400).send(err);
+    res.send({token: token});
   });
 });
 
-//login a user
 
-router.post('/login', (req, res) => {
-  User.authenticate(req.body, (err, user) => {
-    if (err) return res.status(400).send(err);
-
-    let token = user.generateToken();
-    res.cookie('authtoken', token).send(user);
+router.post('/signup', (req,res) => {
+  console.log('req.body:',req.body);
+  User.register(req.body, (err, token) => {
+    res.status(err ? 400 : 200).send(err || {token: token});
   });
 });
+
+router.post('/login', (req,res) => {
+  // console.log('req.body:',req.body);
+  User.authenticate(req.body, (err, token) => {
+    res.status(err ? 400 : 200).send(err || {token: token});
+  });
+});
+
 
 //logout a user
 router.post('/logout', (req, res) => {

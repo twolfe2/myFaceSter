@@ -1,7 +1,9 @@
 'use strict';
 
 
-var app = angular.module('myApp', ['ui.router', 'ngCookies']);
+var app = angular.module('myApp', ['ui.router', 'ngCookies', 'satellizer']);
+$authProvider.loginUrl = '/api/users/login';
+$authProvider.signupUrl = '/api/users/signup';
 
 app.constant('TOKENNAME', 'authtoken');
 
@@ -44,4 +46,18 @@ app.config(function($stateProvider, $urlRouterProvider) {
     })
 
   $urlRouterProvider.otherwise('/');
+})
+
+app.config(function($authProvider) {
+  $authProvider.facebook({
+    clientId: '277768235911300',
+    url: '/api/users/facebook'
+  });
+
+  $authProvider.google({
+    clientId: '776247137078-hablb4tromkh01g1tiom53fatjuvjual.apps.googleusercontent.com',
+    url: '/api/users/google'
+  })
+
+
 })

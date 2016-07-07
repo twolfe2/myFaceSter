@@ -2,8 +2,8 @@
 <h1>{{ currentState | uppercase }}</h1>
 
 <form ng-submit='submit()'>
-  <input type="text" ng-model='user.username' placeholder="Username" required>
-  <input type="email" ng-model='user.email'  placeholder="Email" ng-if='currentState === "register"' required>
+  <!-- <input type="text" ng-model='user.username' placeholder="Username" required> -->
+  <input type="email" ng-model='user.email'  placeholder="Email" required>
   <input type="text" ng-model='user.Profile.name' ng-if='currentState === "register"' placeholder="Name" required>
   <input type="password" ng-model='user.password' placeholder="Password" required>
   <input  type="password"
@@ -13,5 +13,6 @@
           required>
 
   <button class="btn btn-success">{{ currentState }}</button>
+  <button class="btn btn-primary" type='button' ng-click="authenticate('facebook')">Sign in with Facebook</button>
 
 </form>
