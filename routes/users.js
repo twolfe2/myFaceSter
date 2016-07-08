@@ -11,36 +11,40 @@ let router = express.Router();
 
 let User = require('../models/user');
 
+let userPopulate = {
+  path: 'friends',
+  select: '-password -friends'
+}
 
 
 
-router.get('/profile', User.authorized({admin: false}), (req, res) => {
-  console.log(req.user);
+router.get('/profile', User.authorized({ admin: false }), (req, res) => {
+  // console.log(req.user);
   res.send(req.user);
 });
 
-router.post('/facebook', (req,res) => {
+router.post('/facebook', (req, res) => {
   User.facebook(req.body, (err, token) => {
-    if(err) {
+    if (err) {
       console.log(err);
       return res.status(400).send(err);
     }
-    res.send({token: token});
+    res.send({ token: token });
   });
 });
 
 
-router.post('/signup', (req,res) => {
-  console.log('req.body:',req.body);
+router.post('/signup', (req, res) => {
+  console.log('req.body:', req.body);
   User.register(req.body, (err, token) => {
-    res.status(err ? 400 : 200).send(err || {token: token});
+    res.status(err ? 400 : 200).send(err || { token: token });
   });
 });
 
-router.post('/login', (req,res) => {
+router.post('/login', (req, res) => {
   // console.log('req.body:',req.body);
   User.authenticate(req.body, (err, token) => {
-    res.status(err ? 400 : 200).send(err || {token: token});
+    res.status(err ? 400 : 200).send(err || { token: token });
   });
 });
 
@@ -60,23 +64,25 @@ router.post('/logout', (req, res) => {
 // });
 
 //add a friend
-router.post('/:userId/addFriend/:friendId', (req,res) => {
+router.post('/:userId/addFriend/:friendId', (req, res) => {
   User.addFriend(req.params.userId, req.params.friendId, (err, savedUser) => {
     if (err) return res.status(400).send(err);
-    console.log(savedUser);
+    // console.log(savedUser);
     res.send();
   })
 })
 
 
-
 router.route('/')
-  .get(User.authorized({admin: false}),(req, res) => {
-    User.find({}, (err, users) => {
-      if (err) return res.status(400).send(err);
-      res.send(users);
-
-    }).select('-password');
+  .get(User.authorized({ admin: false }), (req, res) => {
+    User
+      .find({})
+      .select('-password')
+      .populate(userPopulate)
+      .exec((err, users) => {
+        if (err) return res.status(400).send(err);
+        res.send(users);
+      })
   })
   .post((req, res) => {
 

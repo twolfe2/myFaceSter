@@ -33,6 +33,11 @@ let userSchema = new mongoose.Schema({
   google: { type: String }
 
 });
+let userPopulate = {
+  path: 'friends',
+  select: '-password -friends'
+}
+
 
 userSchema.statics.authorized = function(authObj) {
 
@@ -55,7 +60,9 @@ return function(req, res, next) {
   jwt.verify(token, JWT_SECRET, (err, payload) => {
     if (err) return res.status(401).send(err);
 
-    User.findById(payload._id, (err, user) => {
+    User.findById(payload._id)
+      .populate(userPopulate)
+      .exec((err, user) => {
       if (err || !user) return res.status(401).send(err || { error: 'User not found.' });
 
       //admin check
