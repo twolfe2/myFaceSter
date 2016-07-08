@@ -14,7 +14,7 @@ let User = require('../models/user');
 
 
 
-router.get('/profile', User.authMiddleware, (req, res) => {
+router.get('/profile', User.authorized({admin: false}), (req, res) => {
   console.log(req.user);
   res.send(req.user);
 });
@@ -52,16 +52,26 @@ router.post('/logout', (req, res) => {
 
 //add a message
 
-router.post('/:fromId/sendMessage/:toId', (req, res) => {
-  User.addMessage(req.params.fromId, req.body.message, req.params.toId, (err, response) => {
+// router.post('/:fromId/sendMessage/:toId', (req, res) => {
+//   User.addMessage(req.params.fromId, req.body.message, req.params.toId, (err, response) => {
+//     if (err) return res.status(400).send(err);
+//     res.send(response);
+//   });
+// });
+
+//add a friend
+router.post('/:userId/addFriend/:friendId', (req,res) => {
+  User.addFriend(req.params.userId, req.params.friendId, (err, savedUser) => {
     if (err) return res.status(400).send(err);
-    res.send(response);
-  });
-});
+    console.log(savedUser);
+    res.send();
+  })
+})
+
 
 
 router.route('/')
-  .get(User.authMiddleware,(req, res) => {
+  .get(User.authorized({admin: false}),(req, res) => {
     User.find({}, (err, users) => {
       if (err) return res.status(400).send(err);
       res.send(users);

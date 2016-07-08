@@ -21,7 +21,7 @@ let User = require('../models/user');
 
 
 
-router.get('/sentMessages/:fromId', User.authMiddleware, (req, res) => {
+router.get('/sentMessages/:fromId', User.authorized({admin: false}), (req, res) => {
   Message.find({ from: req.params.fromId }, (err, messages) => {
     if (err) return res.status(400).send(err);
     res.send(messages);
@@ -29,14 +29,14 @@ router.get('/sentMessages/:fromId', User.authMiddleware, (req, res) => {
 });
 
 
-router.get('/recievedMessages/:toId', User.authMiddleware, (req, res) => {
+router.get('/recievedMessages/:toId', User.authorized({admin: false}), (req, res) => {
   Message.find({ to: req.params.toId }, (err, messages) => {
     if (err) return res.status(400).send(err);
     res.send(messages);
   });
 });
 
-router.post('/:fromId/sendMessage/:toId', User.authMiddleware, (req,res) => {
+router.post('/:fromId/sendMessage/:toId', User.authorized({admin: false}), (req,res) => {
   User.findById(req.params.toId, (err, user) => {
     if(err || !user) return res.status(400).send(err || {error: 'The user you are trying to send a message to does not exist.'});
     let message = {

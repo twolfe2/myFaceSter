@@ -20,8 +20,16 @@ app.controller('mainCtrl', function($scope, $rootScope, User, $auth, $state) {
   };
 });
 
-app.controller('usersCtrl', function(Users, $scope) {
+app.controller('usersCtrl', function(Users, $scope,$rootScope, User) {
   $scope.users = Users.data;
+
+  $scope.addFriend = (friendId) => {
+    User.addFriend($rootScope.currentUser._id, friendId)
+      .then(() => {
+        alert('friend added');
+      })
+
+  }
 })
 
 app.controller('profileCtrl', function(CurrentUser, $scope, $rootScope) {

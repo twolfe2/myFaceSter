@@ -46,6 +46,16 @@ app.service('User', function($http, $rootScope, $cookies, $state, $q, TOKENNAME)
     $state.go('home');
   };
 
+  this.addFriend = (userId, friendId) => {
+    console.log(userId,friendId);
+    return $http.post(`/api/users/${userId}/addFriend/${friendId}`)
+      .catch(err => {
+        if(err) {
+          console.log(err);
+        }
+      });
+  }
+
 });
 
 

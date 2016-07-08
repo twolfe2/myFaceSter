@@ -7,30 +7,63 @@
         <%= title %>
     </title>
     <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/paper.min.css">
     <link rel="stylesheet" href="/css/style.css">
+    <!-- <link rel="stylesheet" href="/bower_components/angular-material/angular-material.css"> -->
+    <!-- <link rel="stylesheet" href="/bower_components/material-design-lite/material.min.css"> -->
+
     <script src="/bower_components/angular/angular.js"></script>
     <script src="/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script src="/bower_components/angular-cookies/angular-cookies.js"></script>
     <script src="/bower_components/satellizer/satellizer.min.js"></script>
+    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+   <!--  // <script src="/bower_components/angular-animate/angular-animate.min.js"></script>
+    // <script src="/bower_components/angular-aria/angular-aria.min.js"></script>
+    // <script src="/bower_components/angular-material/angular-material.min.js"></script> -->
+    <!-- // <script src="/bower_components/material-design-lite/material.min.js"></script> -->
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+
     <script src="/js/module.js"></script>
     <script src="/js/controllers.js"></script>
     <script src="/js/services.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 </head>
 
+
 <body ng-app='myApp' ng-controller='mainCtrl'>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">MyFaceSter</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a ui-sref='profile' ng-if='isAuthenticated()'>Profile</a></li>
+        <li><a ui-sref='users' ng-if='isAuthenticated()'>Users</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a ui-sref='login' ng-if='!isAuthenticated()'>Login</a></li>
+        <li><a ui-sref='register' ng-if='!isAuthenticated()'>Register</a></li>
+        <li><a ng-click='logout()' ng-if='isAuthenticated()'>Logout</a></li>
+        
+      </ul>
+            
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
     <div class="container">
-        <h1><%= title %></h1>
-        <h2> isAuthenticated: {{ isAuthenticated() }} </h2>
-        <button class="btn" ui-sref='home'>Home</button>
-        <span ng-if='!isAuthenticated()'>
-      <button class="btn" ui-sref='login'>Login</button>
-      <button class="btn" ui-sref='register'>Register</button>
-    </span>
-        <span ng-if='isAuthenticated()'>
-      <button class="btn" ng-click='logout()'>Logout</button>
-        <button class="btn" ui-sref='profile'>Profile</button>
-        <button class="btn" ui-sref='users'>Users</button>
-    </span>
         <span ng-show='currentUser'>Hello, {{currentUser.name}}!</span>
         <div ui-view></div>
     </div>

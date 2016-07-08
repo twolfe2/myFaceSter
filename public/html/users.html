@@ -1,2 +1,27 @@
 <h1>Users</h1>
+
+<table class="table">
+    <div class="form-group col-md-4 col-md-offset-8 ">
+        <label for="search" class="control-label">Search</label>
+        <div class=''>
+            <input type="text" class="form-control" id="search" placeholder="Name" ng-model='searchUsers'>
+        </div>
+        <thead>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </thead>
+        <tbody>
+            <tr ng-repeat='user in users | filter: searchUsers'>
+                <td>{{user.image}}</td>
+                <td>{{user.name}}</td>
+                <td>{{user.email}}</td>
+                <td>
+                    <button class="btn btn-primary btn-xs" ng-click="addFriend(user._id)">+</button>
+                </td>
+            </tr>
+        </tbody>
+</table>
+
 <pre>{{users | json}}</pre>

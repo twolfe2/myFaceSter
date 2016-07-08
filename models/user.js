@@ -12,11 +12,7 @@ const request = require('request');
 console.log(FACEBOOK_SECRET);
 
 
-let wallSchema = new mongoose.Schema({
-  createdAt: { type: Date, default: Date.now },
-  from: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  content: { type: String }
-});
+
 
 // let receivedMessageSchema = new mongoose.Schema({
 //   createdAt: { type: Date, default: Date.now },
@@ -28,19 +24,20 @@ let userSchema = new mongoose.Schema({
   email: { type: String, unique: true, lowercase: true },
   password: { type: String },
   // username: { type: String, required: true },
-
   name: { type: String, required: true },
   image: { type: String },
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  wall: [wallSchema],
-
   facebook: { type: String },
+  admin: {type: Boolean, default: false},
   profileImage: { type: String },
   google: { type: String }
 
 });
 
-userSchema.statics.authMiddleware = function(req, res, next) {
+userSchema.statics.authorized = function(authObj) {
+
+
+return function(req, res, next) {
   // look at the cookie, and get the token
   // verify the token
 
@@ -61,12 +58,27 @@ userSchema.statics.authMiddleware = function(req, res, next) {
     User.findById(payload._id, (err, user) => {
       if (err || !user) return res.status(401).send(err || { error: 'User not found.' });
 
+      //admin check
+      if(authObj.admin && !user.admin) {
+        return res.status(401).send({error: 'You do not have the correct privileges'});
+      }
+
       req.user = user;
 
       next();
     });
   });
 };
+}
+
+
+userSchema.statics.addFriend = function(userId,friendId,cb) {
+  User.findByIdAndUpdate(userId,{$push: {'friends': friendId}}, (err, savedUser) => {
+    if(err) cb(err);
+    cb(null, savedUser);
+
+  })
+}
 
 userSchema.statics.facebook = function(body, cb) {
   console.log(body);
