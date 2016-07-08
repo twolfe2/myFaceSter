@@ -58,5 +58,23 @@ app.service('User', function($http, $rootScope, $cookies, $state, $q, TOKENNAME)
 
 });
 
+app.service('Message', function($http, $rootScope, $cookies, $state, $q, TOKENNAME) {
+
+
+  this.getMessages = () => {
+    return $http.get('/api/messages/recievedMessages')
+      .catch(err => {
+        console.log(err);
+      })
+  }
+
+  this.sendMessage = (messageObj) => {
+    return $http.post('/api/messages/sendMessage', messageObj)
+      .catch(err => {
+        console.log(err);
+      })
+  }
+});
+
 
 

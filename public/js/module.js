@@ -29,6 +29,9 @@ app.config(function($stateProvider, $urlRouterProvider) {
       resolve: {
         CurrentUser: function(User) {
           return User.getProfile();
+        },
+        Messages: function(Message) {
+          return Message.getMessages();
         }
       }
     })
@@ -41,6 +44,12 @@ app.config(function($stateProvider, $urlRouterProvider) {
           return User.getUsers();
         }
       }
+    })
+    .state('sendMessage', {
+      url:'/sendMessage', 
+      templateUrl: '/html/sendMessage.html',
+      controller: 'sendMessageCtrl',
+      params: {friend: null}
     })
 
   $urlRouterProvider.otherwise('/');

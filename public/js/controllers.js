@@ -32,9 +32,11 @@ app.controller('usersCtrl', function(Users, $scope,$rootScope, User) {
   }
 })
 
-app.controller('profileCtrl', function(CurrentUser, $scope, $rootScope) {
+app.controller('profileCtrl', function(CurrentUser, $scope, $rootScope, Messages) {
   console.log('profileCtrl!');
   console.log('CurrentUser:', CurrentUser);
+  console.log(Messages);
+  $scope.messages = Messages.data;
   $rootScope.currentUser = CurrentUser.data;
 })
 
@@ -86,3 +88,22 @@ app.controller('loginRegisterCtrl', function($scope, $state, User, $auth) {
   };
 
 });
+
+
+app.controller('sendMessageCtrl', function($scope, $state, Message, $stateParams) {
+  $scope.message = {};
+  $scope.to = $stateParams.friend.name;
+  $scope.message.to = $stateParams.friend._id;
+  $scope.sendMessage = () => {
+    Message.sendMessage($scope.message)
+      .then((res) => {
+        // console.log(res);
+        $state.go('profile');
+      })
+  }
+
+
+});
+
+
+

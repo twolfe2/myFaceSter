@@ -2,17 +2,38 @@
 <h1>{{ currentState | uppercase }}</h1>
 
 <form ng-submit='submit()'>
-<div class="mdl-textfield mdl-js-textfield">
   <!-- <input type="text" ng-model='user.username' placeholder="Username" required> -->
-  <input class="mdl-textfield__input" type="email" ng-model='user.email'  placeholder="Email" required>
-  <input class="mdl-textfield__input" type="text" ng-model='user.name' ng-if='currentState === "register"' placeholder="Name" required>
-  <input class="mdl-textfield__input" type="password" ng-model='user.password' placeholder="Password" required>
-  <input class="mdl-textfield__input"
+  <div class="form-group">
+    <label for="">Email</label>
+    <input class="form-control" type="email" ng-model='user.email'  placeholder="Email" required>
+  </div>
+    <div class="form-group">
+    <label for="">Name</label>
+    <input class="form-control" type="text" ng-model='user.name' ng-if='currentState === "register"' placeholder="Name" required>
+  </div>
+  <div class="form-group">
+    <label for="">Image URL</label>
+    <input class="form-control" type="url" ng-model='user.image' ng-if='currentState === "register"' placeholder="Image URL" required>
+  </div>
+    <div class="form-group">
+    <label for="">Password</label>
+    <input class="form-control" type="password" ng-model='user.password' placeholder="Password" required>
+  </div>
+  <div class="form-group">
+    <label for="">Confirm Password</label>
+    <input class="form-control"
           type="password"
           ng-model='user.password2'
           placeholder="Password (again)"
           ng-if='currentState === "register"'
           required>
+  </div>
+  <div class="form-group">
+    <label for=""></label>
+  </div>
+  
+  
+  
 
   <button class="btn btn-success">{{ currentState }}</button>
   <button class="btn btn-primary" type='button' ng-click="authenticate('facebook')">Sign in with Facebook</button>

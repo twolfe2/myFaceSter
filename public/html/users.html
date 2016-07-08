@@ -14,7 +14,7 @@
         </thead>
         <tbody>
             <tr ng-repeat='user in users | filter: searchUsers'>
-                <td>{{user.image}}</td>
+                <td><div class="media"><img class="media-object userList" src="{{user.image}}" alt="Profile picture"></div></td>
                 <td>{{user.name}}</td>
                 <td>{{user.email}}</td>
                 <td>

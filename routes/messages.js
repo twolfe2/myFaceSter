@@ -5,7 +5,7 @@ const express = require('express');
 
 
 
-// api/cruds
+// api/messages
 let router = express.Router();
 
 let Message = require('../models/message');
@@ -28,20 +28,29 @@ router.get('/sentMessages/:fromId', User.authorized({admin: false}), (req, res) 
   });
 });
 
+let MessagePopulate = {
+  path: 'from',
+  select: 'name image'
 
-router.get('/recievedMessages/:toId', User.authorized({admin: false}), (req, res) => {
-  Message.find({ to: req.params.toId }, (err, messages) => {
+}
+router.get('/recievedMessages', User.authorized({admin: false}), (req, res) => {
+  console.log(req.user);
+  Message
+  .find({ to: req.user._id })
+  .populate(MessagePopulate)
+   .exec((err, messages) => {
     if (err) return res.status(400).send(err);
     res.send(messages);
   });
 });
 
-router.post('/:fromId/sendMessage/:toId', User.authorized({admin: false}), (req,res) => {
-  User.findById(req.params.toId, (err, user) => {
+router.post('/sendMessage', User.authorized({admin: false}), (req,res) => {
+  console.log(req.body);
+  User.findById(req.body.to, (err, user) => {
     if(err || !user) return res.status(400).send(err || {error: 'The user you are trying to send a message to does not exist.'});
     let message = {
-      to: req.params.toId,
-      from: req.params.fromId,
+      to: req.body.to,
+      from: req.user._id,
       content: req.body.content
     };
     Message.create(message, (err, savedMessage) => {
